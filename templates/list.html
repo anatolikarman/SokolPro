@@ -22,10 +22,21 @@
             --accent: #5b9bd5; --accent-hover: #4a86c5; --accent-text: #ffffff;
             --danger: #c9534f; --danger-hover: #b8443f;
         }
-        body { font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px;
+        body { font-family: Arial, sans-serif; max-width: 940px; margin: 40px auto; padding: 0 16px;
                background: var(--bg); color: var(--text); }
         h1 { text-align: left; margin-top: 0; }
         .page { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+        .weather-column { flex: 0 0 auto; }
+        .weather-card { background: var(--card-bg); border-radius: 8px; padding: 14px; width: 190px;
+                         box-sizing: border-box; text-align: center; text-decoration: none; color: inherit;
+                         display: block; }
+        .weather-card:hover { background: var(--card-bg-alt); }
+        .weather-title { margin: 0 0 10px; font-size: 13px; font-weight: bold; color: var(--muted); }
+        .weather-icon { font-size: 36px; line-height: 1; }
+        .weather-temp { font-size: 28px; font-weight: bold; margin-top: 4px; }
+        .weather-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .weather-range { font-size: 12px; color: var(--muted-2); margin-top: 8px; }
+        .weather-meta { font-size: 11px; color: var(--muted-2); margin-top: 4px; }
         .gif-column { flex: 0 0 auto; }
         .gif-column img { width: 160px; height: 160px; border-radius: 8px; }
         .gif-column .gif-dark { display: none; }
@@ -100,6 +111,19 @@
     <h1>Список клиентов</h1>
 
     <div class="page">
+        {% if weather %}
+        <div class="weather-column">
+            <a class="weather-card" href="https://wttr.in/Tbilisi" target="_blank" rel="noopener noreferrer">
+                <h3 class="weather-title">Погода в Тбилиси</h3>
+                <div class="weather-icon">{{ weather.icon }}</div>
+                <div class="weather-temp">{{ weather.temp_c }}°C</div>
+                <div class="weather-desc">{{ weather.description }}</div>
+                <div class="weather-range">{{ weather.min_temp_c }}° … {{ weather.max_temp_c }}° сегодня</div>
+                <div class="weather-meta">Ощущается как {{ weather.feels_like_c }}°, ветер {{ weather.wind_kmph }} км/ч, влажность {{ weather.humidity }}%</div>
+            </a>
+        </div>
+        {% endif %}
+
         <div class="gif-column">
             <img class="gif-light" src="{{ url_for('static', filename='images/telepurte-animation-light.gif') }}" alt="Telepurte animation">
             <img class="gif-dark" src="{{ url_for('static', filename='images/telepurte-animation-dark.gif') }}" alt="Telepurte animation">

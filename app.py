@@ -15,6 +15,7 @@ import calendar_utils as cal
 import models
 import pdf_exporter
 import repository as repo
+import weather
 import word_exporter
 from db import init_db
 from sanitize import sanitize_notes
@@ -124,8 +125,10 @@ def list_view():
         selected_sessions=selected_sessions,
     )
 
-    template = "_calendar_list.html" if _is_ajax() else "list.html"
-    return render_template(template, **context)
+    if _is_ajax():
+        return render_template("_calendar_list.html", **context)
+    context["weather"] = weather.get_tbilisi_weather()
+    return render_template("list.html", **context)
 
 
 # --------------------------------------------------------------- add client --
