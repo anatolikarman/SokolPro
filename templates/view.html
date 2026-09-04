@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SokolPro - Информация о клиенте</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #fcfafc; --text: #222222; --muted: #555555; --muted-2: #777777;
+            --card-bg: #f2f2f2; --card-bg-alt: #f8f8f8; --border: #cccccc; --input-bg: #ffffff;
+            --accent: #337ab7; --accent-hover: #286090; --accent-text: #ffffff;
+            --danger: #d9534f; --danger-hover: #c9302c;
+            --success-bg: #dff0d8; --success-text: #3c763d;
+            --error-bg: #f8d7da; --error-text: #842029;
+            --shadow: rgba(0, 0, 0, 0.15);
+        }
+        [data-theme="dark"] {
+            --bg: #030303; --text: #e6e6e6; --muted: #aaaaaa; --muted-2: #888888;
+            --card-bg: #2a2a2a; --card-bg-alt: #262626; --border: #444444; --input-bg: #2a2a2a;
+            --accent: #5b9bd5; --accent-hover: #4a86c5; --accent-text: #ffffff;
+            --danger: #c9534f; --danger-hover: #b8443f;
+            --success-bg: #234a2e; --success-text: #a8d8b9;
+            --error-bg: #4a2327; --error-text: #e8a5ac;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 24px; box-sizing: border-box; min-height: 100vh;
+               display: flex; align-items: flex-start; gap: 24px; background: var(--bg); color: var(--text); }
+        h1 { text-align: left; margin-top: 0; }
+        h2 { font-size: 18px; margin-top: 0; }
+        h3 { font-size: 15px; margin: 16px 0 8px; }
+
+        .theme-toggle { position: fixed; top: 16px; right: 16px; width: 36px; height: 36px;
+                         border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg);
+                         color: var(--text); cursor: pointer; font-size: 16px; z-index: 200; }
+        .theme-toggle:hover { background: var(--card-bg-alt); }
+
+        .main-content { flex: 1 1 auto; max-width: 700px; min-width: 420px; }
+
+        .page { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+        .left-column { flex: 0 1 220px; }
+        .right-column { flex: 0 1 240px; }
+
+        .field { margin-bottom: 16px; }
+        .field-label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+        .field-value { font-size: 16px; }
+        .checkbox-row { display: flex; align-items: center; gap: 8px; }
+        .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; }
+        button.save-btn { background: #5cb85c; color: #fff; border: none; border-radius: 4px;
+                           padding: 10px 16px; font-size: 16px; cursor: pointer; }
+        button.save-btn:hover { background: #4cae4c; }
+        .back-link { display: inline-block; margin-top: 24px; color: var(--accent); text-decoration: none; }
+        .success-msg { display: inline-flex; align-items: center; gap: 6px; background: var(--success-bg);
+                        color: var(--success-text); padding: 6px 12px; border-radius: 4px; margin-bottom: 16px;
+                        transition: opacity 0.4s ease; }
+
+        .notes-doc-link { display: block; margin-bottom: 12px; padding: 8px 16px; background: var(--accent);
+                           color: var(--accent-text); text-decoration: none; border-radius: 4px; font-size: 14px;
+                           text-align: center; box-sizing: border-box; }
+        .notes-doc-link:hover { background: var(--accent-hover); }
+
+        .session-form { display: flex; flex-direction: column; gap: 8px; }
+        .session-form label { font-size: 14px; color: var(--muted); }
+        .session-form input[type="date"], .session-form input[type="time"], .session-form textarea {
+            padding: 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 4px;
+            font-family: inherit; background: var(--input-bg); color: var(--text);
+        }
+        .session-form textarea { resize: vertical; }
+
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .calendar-nav { display: inline-flex; align-items: center; justify-content: center; width: 32px;
+                         height: 32px; border-radius: 50%; background: var(--card-bg); color: var(--text);
+                         text-decoration: none; font-size: 18px; }
+        .calendar-nav:hover { background: var(--card-bg-alt); }
+        .calendar-title { font-weight: bold; }
+        .calendar-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
+        .calendar-table th { padding: 6px 2px; font-size: 13px; color: var(--muted-2); font-weight: normal; }
+        .calendar-table td { padding: 2px; }
+        .calendar-day { display: block; padding: 8px 0; border-radius: 4px; text-decoration: none;
+                         color: var(--text); font-size: 14px; }
+        a.calendar-day:hover { outline: 1px solid var(--muted); }
+        .day-upcoming { background: #fff3b0; color: #1a1a1a; }
+        .day-paid { background: #c3e6cb; color: #1a1a1a; }
+        .day-unpaid { background: #f5c2c7; color: #1a1a1a; }
+        .day-selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+        .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--muted); }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+        dialog#session-dialog { border: none; border-radius: 8px; padding: 20px; width: 90%; max-width: 340px;
+                                 background: var(--bg); color: var(--text); }
+        dialog#session-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+        .selected-date-label { font-weight: bold; margin: 0 0 8px; }
+        .dialog-actions { margin-top: 12px; }
+        .close-btn { background: var(--card-bg); color: var(--text); border: none; border-radius: 4px;
+                     padding: 8px 14px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .close-btn:hover { background: var(--card-bg-alt); }
+        .error-msg { background: var(--error-bg); color: var(--error-text); padding: 8px 12px; border-radius: 4px;
+                     font-size: 14px; margin: 0 0 12px; }
+
+        .confirm-dialog { border: none; border-radius: 8px; padding: 20px; width: 90%; max-width: 320px;
+                           background: var(--bg); color: var(--text); }
+        .confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+        .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+        .confirm-cancel-btn { background: var(--card-bg); color: var(--text); border: none; border-radius: 4px;
+                               padding: 8px 14px; font-size: 14px; cursor: pointer; }
+        .confirm-cancel-btn:hover { background: var(--card-bg-alt); }
+        .confirm-delete-btn { background: var(--danger); color: #fff; border: none; border-radius: 4px;
+                               padding: 8px 14px; font-size: 14px; cursor: pointer; }
+        .confirm-delete-btn:hover { background: var(--danger-hover); }
+
+        .editor-panel { flex: 1 1 60vw; min-width: 640px; max-width: 1100px; height: calc(100vh - 48px);
+                         position: sticky; top: 24px; box-sizing: border-box; padding: 24px; background: var(--card-bg-alt);
+                         border-radius: 8px; box-shadow: 0 2px 12px var(--shadow);
+                         display: flex; flex-direction: column; }
+        .editor-panel-header { display: flex; justify-content: space-between; align-items: center;
+                                margin-bottom: 12px; flex: 0 0 auto; }
+        .editor-panel-actions { display: flex; align-items: center; gap: 8px; }
+        .delete-btn { background: var(--danger); color: #fff; border: none; border-radius: 4px; padding: 10px 16px;
+                      font-size: 14px; cursor: pointer; width: 100%; }
+        .delete-btn:hover { background: var(--danger-hover); }
+        .close-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px;
+                      height: 28px; border-radius: 50%; background: var(--card-bg); color: var(--text);
+                      text-decoration: none; font-size: 18px; line-height: 1; }
+        .close-icon:hover { background: var(--border); }
+        .editor-form { display: flex; gap: 16px; flex: 1 1 auto; min-height: 0; }
+        .editor-fields { flex: 0 0 140px; display: flex; flex-direction: column; gap: 6px; }
+        .editor-fields label { font-size: 12px; color: var(--muted); }
+        .editor-fields input[type="time"], .editor-fields input[type="number"] {
+            padding: 5px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;
+            font-family: inherit; background: var(--input-bg); color: var(--text);
+        }
+        .editor-fields .save-btn { padding: 7px 10px; font-size: 13px; }
+        .delete-form { margin-top: 6px; }
+        .delete-form .delete-btn { padding: 7px 10px; font-size: 13px; }
+        .editor-notes-col { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+        .notes-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .editor-notes-col label { font-size: 14px; color: var(--muted); }
+        .maximize-btn { background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px;
+                         color: var(--text); cursor: pointer; font-size: 12px; padding: 4px 10px; }
+        .maximize-btn:hover { background: var(--card-bg); }
+        .editor-panel.notes-maximized { flex: 1 1 95vw; max-width: none; min-width: 0; }
+        .editor-panel.notes-maximized .editor-fields { display: none; }
+        .editor-toolbar { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+        .editor-toolbar button { min-width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 4px;
+                                  background: var(--input-bg); color: var(--text); cursor: pointer; font-size: 14px;
+                                  padding: 0 8px; }
+        .editor-toolbar button:hover { background: var(--card-bg); }
+        .editor-toolbar button.active { background: var(--accent); color: #fff; border-color: var(--accent-hover); }
+        .editor-toolbar button.active:hover { background: var(--accent-hover); }
+        .editor-toolbar select { height: 32px; border: 1px solid var(--border); border-radius: 4px;
+                                  background: var(--input-bg); color: var(--text); font-size: 13px; font-family: inherit; }
+        .notes-editor { flex: 1 1 auto; overflow-y: auto; padding: 8px; border: 1px solid var(--border); border-radius: 4px;
+                         background: var(--input-bg); color: var(--text); font-size: 14px; }
+        .notes-editor:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+        .notes-editor h1 { font-size: 22px; margin: 12px 0 6px; }
+        .notes-editor h2 { font-size: 18px; margin: 10px 0 6px; }
+        .notes-editor h3 { font-size: 15px; margin: 8px 0 4px; }
+        .notes-editor ul { margin: 4px 0; padding-left: 22px; }
+        .backstory-save-btn { margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Переключить тему">&#127769;</button>
+
+    <div class="main-content">
+        <h1>Информация о клиенте</h1>
+
+        {% if request.args.get('saved') is not none %}
+        <div id="success-msg" class="success-msg">&#10003; Сохранено</div>
+        {% endif %}
+
+        <div class="page">
+            <div class="left-column">
+                <a class="notes-doc-link" href="{{ url_for('notes_document', client_id=client.id) }}"
+                   target="_blank" rel="noopener noreferrer">Документ с заметками</a>
+                <a class="notes-doc-link" href="{{ url_for('view_client', client_id=client.id, editBackstory='true') }}">Добавить предысторию</a>
+
+                <div class="field">
+                    <span class="field-label">Имя</span>
+                    <span class="field-value">{{ client.name }}</span>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Дата рождения</span>
+                    <span class="field-value">{{ client.formatted_date_of_birth if client.date_of_birth is not none else 'не указана' }}</span>
+                </div>
+
+                <form method="post" action="{{ url_for('update_active', client_id=client.id) }}" onsubmit="formSubmitting = true;">
+                    <div class="field checkbox-row">
+                        <input type="checkbox" id="active" name="active" {% if client.active %}checked{% endif %}>
+                        <label for="active">Активен</label>
+                    </div>
+                    <button type="submit" class="save-btn">Сохранить</button>
+                </form>
+
+                <a class="back-link" href="{{ url_for('list_view') }}">Назад к списку</a>
+            </div>
+
+{% include "_calendar_view.html" %}
+        </div>
+    </div>
+
+    {% if selected_date is not none and selected_sessions %}
+    <div class="editor-panel" id="editor-panel">
+        <div class="editor-panel-header">
+            <h3>Сеанс &mdash; <span>{{ selected_date_formatted }}</span></h3>
+            <a class="close-icon" href="{{ url_for('view_client', client_id=client.id, year=calendar_year, month=calendar_month) }}">&times;</a>
+        </div>
+
+        {% if overlap_error %}
+        <p class="error-msg">{{ 'Это время пересекается с сеансом клиента: ' + conflict_client_name if conflict_client_name is not none else 'Это время пересекается с другим сеансом' }}</p>
+        {% endif %}
+
+        <form id="update-session-form" method="post"
+              action="{{ url_for('update_session', client_id=client.id, session_id=selected_sessions[0].id) }}"
+              onsubmit="formSubmitting = true; return syncEditorContent();"></form>
+
+        <div class="editor-form">
+            <div class="editor-fields">
+                <label for="edit-time">Время</label>
+                <input form="update-session-form" type="time" id="edit-time" name="time"
+                       value="{{ selected_sessions[0].formatted_time }}" required>
+
+                <label for="edit-length">Длительность (мин)</label>
+                <input form="update-session-form" type="number" id="edit-length" name="length" min="1"
+                       value="{{ selected_sessions[0].duration_minutes }}" required>
+
+                <div class="checkbox-row">
+                    <input form="update-session-form" type="checkbox" id="edit-paid" name="paid"
+                           {% if selected_sessions[0].paid %}checked{% endif %}>
+                    <label for="edit-paid">Оплачено</label>
+                </div>
+
+                <button form="update-session-form" type="submit" class="save-btn">Сохранить</button>
+
+                <form class="delete-form" method="post"
+                      action="{{ url_for('delete_session', client_id=client.id, session_id=selected_sessions[0].id) }}"
+                      onsubmit="return requestConfirm(this, 'Удалить сеанс?');">
+                    <button type="submit" class="delete-btn">Удалить сеанс</button>
+                </form>
+            </div>
+
+            <div class="editor-notes-col">
+                <div class="notes-header-row">
+                    <label>Заметки</label>
+                    <button type="button" id="maximize-btn" class="maximize-btn" onclick="toggleMaximize()">Развернуть</button>
+                </div>
+                <div class="editor-toolbar">
+                    <select onchange="if (this.value) { document.execCommand('formatBlock', false, this.value); } this.selectedIndex = 0;">
+                        <option value="">Формат</option>
+                        <option value="&lt;p&gt;">Обычный текст</option>
+                        <option value="&lt;h1&gt;">Заголовок 1</option>
+                        <option value="&lt;h2&gt;">Заголовок 2</option>
+                        <option value="&lt;h3&gt;">Заголовок 3</option>
+                    </select>
+                    <button type="button" id="fmt-bold" onclick="applyFormat('bold')"><b>Ж</b></button>
+                    <button type="button" id="fmt-italic" onclick="applyFormat('italic')"><i>К</i></button>
+                    <button type="button" id="fmt-underline" onclick="applyFormat('underline')"><u>Ч</u></button>
+                    <button type="button" id="fmt-list" onclick="applyFormat('insertUnorderedList')">&#8226; Список</button>
+                </div>
+                <div id="notes-editor" class="notes-editor" contenteditable="true">{{ selected_sessions[0].notes|safe if selected_sessions[0].notes is not none else '' }}</div>
+                <input form="update-session-form" type="hidden" id="edit-notes" name="notes">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if edit_backstory %}
+    <div class="editor-panel" id="backstory-panel">
+        <div class="editor-panel-header">
+            <h3>Предыстория клиента</h3>
+            <a class="close-icon" href="{{ url_for('view_client', client_id=client.id) }}">&times;</a>
+        </div>
+
+        <form id="update-backstory-form" method="post" action="{{ url_for('update_backstory', client_id=client.id) }}"
+              onsubmit="formSubmitting = true; return syncBackstoryContent();"></form>
+
+        <div class="editor-toolbar">
+            <select onchange="if (this.value) { document.execCommand('formatBlock', false, this.value); } this.selectedIndex = 0;">
+                <option value="">Формат</option>
+                <option value="&lt;p&gt;">Обычный текст</option>
+                <option value="&lt;h1&gt;">Заголовок 1</option>
+                <option value="&lt;h2&gt;">Заголовок 2</option>
+                <option value="&lt;h3&gt;">Заголовок 3</option>
+            </select>
+            <button type="button" id="bs-fmt-bold" onclick="applyBackstoryFormat('bold')"><b>Ж</b></button>
+            <button type="button" id="bs-fmt-italic" onclick="applyBackstoryFormat('italic')"><i>К</i></button>
+            <button type="button" id="bs-fmt-underline" onclick="applyBackstoryFormat('underline')"><u>Ч</u></button>
+            <button type="button" id="bs-fmt-list" onclick="applyBackstoryFormat('insertUnorderedList')">&#8226; Список</button>
+        </div>
+        <div id="backstory-editor" class="notes-editor" contenteditable="true">{{ client.backstory|safe if client.backstory is not none else '' }}</div>
+        <input form="update-backstory-form" type="hidden" id="backstory-hidden" name="backstory">
+
+        <button form="update-backstory-form" type="submit" class="save-btn backstory-save-btn">Сохранить</button>
+    </div>
+    {% endif %}
+
+    {% if client.active and selected_date is not none and not selected_sessions %}
+    <dialog id="session-dialog">
+        <h3>Добавить сеанс</h3>
+        <p class="selected-date-label">Дата: {{ selected_date_formatted }}</p>
+        {% if overlap_error %}
+        <p class="error-msg">{{ 'Это время пересекается с сеансом клиента: ' + conflict_client_name if conflict_client_name is not none else 'Это время пересекается с другим сеансом' }}</p>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('add_session', client_id=client.id) }}" class="session-form">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+
+            <label for="time">Время</label>
+            <input type="time" id="time" name="time" required>
+
+            <label for="length">Длительность (мин)</label>
+            <input type="number" id="length" name="length" min="1" value="60" required>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="paid" name="paid">
+                <label for="paid">Оплачено</label>
+            </div>
+
+            <label for="notes">Заметки</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+
+            <button type="submit" class="save-btn">Добавить</button>
+        </form>
+
+        <div class="dialog-actions">
+            <a class="close-btn" href="{{ url_for('view_client', client_id=client.id, year=calendar_year, month=calendar_month) }}">Закрыть</a>
+        </div>
+    </dialog>
+    {% endif %}
+
+    <dialog id="confirm-dialog" class="confirm-dialog">
+        <p id="confirm-message">Вы уверены?</p>
+        <div class="confirm-actions">
+            <button type="button" class="confirm-cancel-btn" onclick="cancelConfirm()">Отмена</button>
+            <button type="button" class="confirm-delete-btn" onclick="confirmPendingAction()">Удалить</button>
+        </div>
+    </dialog>
+
+    <dialog id="unsaved-dialog" class="confirm-dialog">
+        <p>У вас есть несохранённые изменения. Закрыть без сохранения?</p>
+        <div class="confirm-actions">
+            <button type="button" class="confirm-cancel-btn" onclick="document.getElementById('unsaved-dialog').close()">Остаться</button>
+            <button type="button" class="confirm-delete-btn" onclick="discardChanges()">Закрыть без сохранения</button>
+        </div>
+    </dialog>
+
+    <script>
+        var pendingForm = null;
+        var formSubmitting = false;
+        function requestConfirm(form, message) {
+            pendingForm = form;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-dialog').showModal();
+            return false;
+        }
+        function confirmPendingAction() {
+            document.getElementById('confirm-dialog').close();
+            if (pendingForm) {
+                formSubmitting = true;
+                pendingForm.submit();
+                pendingForm = null;
+            }
+        }
+        function cancelConfirm() {
+            document.getElementById('confirm-dialog').close();
+            pendingForm = null;
+        }
+
+        // Unsaved-changes guardrails: track edits to the active toggle, session fields/notes,
+        // and the backstory editor (whichever of these are present on this page load). Every
+        // in-page link (calendar days, month arrows, back-link, panel close icons) is intercepted
+        // uniformly here so they all show the same custom dialog instead of silently discarding
+        // changes. The one exception is navigation the browser itself controls (closing the tab,
+        // refreshing, typing a URL, back/forward) — browsers block custom UI there for security,
+        // so that case still falls back to the native beforeunload prompt.
+        var isDirty = false;
+        function markDirty() { isDirty = true; }
+        function trackDirty(id, eventName) {
+            var el = document.getElementById(id);
+            if (el) { el.addEventListener(eventName, markDirty); }
+        }
+        trackDirty('active', 'change');
+        trackDirty('edit-time', 'input');
+        trackDirty('edit-length', 'input');
+        trackDirty('edit-paid', 'change');
+        trackDirty('notes-editor', 'input');
+        trackDirty('backstory-editor', 'input');
+
+        var pendingHref = null;
+        document.addEventListener('click', function (event) {
+            if (!isDirty) {
+                return;
+            }
+            var link = event.target.closest('a[href]');
+            if (!link || link.target === '_blank') {
+                return;
+            }
+            event.preventDefault();
+            pendingHref = link.href;
+            document.getElementById('unsaved-dialog').showModal();
+        });
+        function discardChanges() {
+            isDirty = false;
+            document.getElementById('unsaved-dialog').close();
+            if (pendingHref) {
+                window.location.href = pendingHref;
+            }
+        }
+
+        window.addEventListener('beforeunload', function (event) {
+            if (isDirty && !formSubmitting) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/calendar-nav.js') }}"></script>
+    <script>
+        (function () {
+            function closeOpenPanels() {
+                var editorPanel = document.getElementById('editor-panel');
+                if (editorPanel) { editorPanel.remove(); }
+                var sessionDialog = document.getElementById('session-dialog');
+                if (sessionDialog) {
+                    if (typeof sessionDialog.close === 'function' && sessionDialog.open) { sessionDialog.close(); }
+                    sessionDialog.remove();
+                }
+            }
+
+            initCalendarNav({
+                linkSelector: 'a.calendar-nav',
+                // Unsaved changes take priority: leave the click to the document-level
+                // handler above, which shows a confirm dialog and does a real navigation.
+                shouldIntercept: function () { return !isDirty; },
+                afterLoad: closeOpenPanels
+            });
+        })();
+    </script>
+
+    {% if client.active and selected_date is not none and not selected_sessions %}
+    <script>
+        var dialog = document.getElementById('session-dialog');
+        if (dialog && typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        }
+    </script>
+    {% endif %}
+
+    {% if edit_backstory %}
+    <script>
+        function syncBackstoryContent() {
+            var editor = document.getElementById('backstory-editor');
+            var hidden = document.getElementById('backstory-hidden');
+            if (editor && hidden) {
+                hidden.value = editor.innerHTML;
+            }
+            return true;
+        }
+
+        function applyBackstoryFormat(command) {
+            var editor = document.getElementById('backstory-editor');
+            editor.focus();
+
+            var selection = window.getSelection();
+            var wasCollapsed = selection.rangeCount > 0 && selection.getRangeAt(0).collapsed;
+
+            document.execCommand(command);
+
+            if (wasCollapsed && (command === 'bold' || command === 'italic' || command === 'underline')) {
+                document.execCommand('insertHTML', false, '​');
+            }
+
+            updateBackstoryToolbarState();
+        }
+
+        function updateBackstoryToolbarState() {
+            setActive('bs-fmt-bold', document.queryCommandState('bold'));
+            setActive('bs-fmt-italic', document.queryCommandState('italic'));
+            setActive('bs-fmt-underline', document.queryCommandState('underline'));
+            setActive('bs-fmt-list', document.queryCommandState('insertUnorderedList'));
+        }
+
+        function setActive(id, isActive) {
+            var btn = document.getElementById(id);
+            if (btn) {
+                btn.classList.toggle('active', isActive);
+            }
+        }
+
+        var backstoryEditorEl = document.getElementById('backstory-editor');
+        if (backstoryEditorEl) {
+            backstoryEditorEl.addEventListener('keyup', updateBackstoryToolbarState);
+            backstoryEditorEl.addEventListener('mouseup', updateBackstoryToolbarState);
+            backstoryEditorEl.addEventListener('focus', updateBackstoryToolbarState);
+        }
+    </script>
+    {% endif %}
+
+    {% if selected_date is not none and selected_sessions %}
+    <script>
+        function syncEditorContent() {
+            var editor = document.getElementById('notes-editor');
+            var hidden = document.getElementById('edit-notes');
+            if (editor && hidden) {
+                hidden.value = editor.innerHTML;
+            }
+            return true;
+        }
+
+        function applyFormat(command) {
+            var editor = document.getElementById('notes-editor');
+            editor.focus();
+
+            var selection = window.getSelection();
+            var wasCollapsed = selection.rangeCount > 0 && selection.getRangeAt(0).collapsed;
+
+            document.execCommand(command);
+
+            // Toggling bold/italic/underline off at a bare caret (nothing selected) right at the
+            // end of styled text leaves the browser's internal typing-style stuck on the old value,
+            // so the next characters typed come out styled again. Inserting an invisible character
+            // forces a real DOM boundary at the toggle point, which fixes the stuck state.
+            if (wasCollapsed && (command === 'bold' || command === 'italic' || command === 'underline')) {
+                document.execCommand('insertHTML', false, '​');
+            }
+
+            updateToolbarState();
+        }
+
+        function toggleMaximize() {
+            var panel = document.getElementById('editor-panel');
+            var btn = document.getElementById('maximize-btn');
+            var maximized = panel.classList.toggle('notes-maximized');
+            btn.textContent = maximized ? 'Свернуть' : 'Развернуть';
+        }
+
+        function setActive(id, isActive) {
+            var btn = document.getElementById(id);
+            if (btn) {
+                btn.classList.toggle('active', isActive);
+            }
+        }
+
+        function updateToolbarState() {
+            setActive('fmt-bold', document.queryCommandState('bold'));
+            setActive('fmt-italic', document.queryCommandState('italic'));
+            setActive('fmt-underline', document.queryCommandState('underline'));
+            setActive('fmt-list', document.queryCommandState('insertUnorderedList'));
+        }
+
+        var notesEditorEl = document.getElementById('notes-editor');
+        if (notesEditorEl) {
+            notesEditorEl.addEventListener('keyup', updateToolbarState);
+            notesEditorEl.addEventListener('mouseup', updateToolbarState);
+            notesEditorEl.addEventListener('focus', updateToolbarState);
+        }
+    </script>
+    {% endif %}
+
+    {% if request.args.get('saved') is not none %}
+    <script>
+        setTimeout(function () {
+            var el = document.getElementById('success-msg');
+            if (el) {
+                el.style.opacity = '0';
+                setTimeout(function () { el.style.display = 'none'; }, 400);
+            }
+        }, 2000);
+    </script>
+    {% endif %}
+
+    <script>
+        function updateThemeIcon() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('theme-toggle-btn').textContent = isDark ? '☀' : '\u{1F319}';
+        }
+        function toggleTheme() {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon();
+        }
+        updateThemeIcon();
+    </script>
+</body>
+</html>

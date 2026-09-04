@@ -1,0 +1,36 @@
+            <div class="right-column" id="calendar-container">
+                <div class="calendar-header">
+                    <a class="calendar-nav" href="{{ url_for('view_client', client_id=client.id, year=prev_year, month=prev_month) }}">&larr;</a>
+                    <span class="calendar-title">{{ month_title }}</span>
+                    <a class="calendar-nav" href="{{ url_for('view_client', client_id=client.id, year=next_year, month=next_month) }}">&rarr;</a>
+                </div>
+                <table class="calendar-table">
+                    <thead>
+                        <tr>
+                            <th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Вс</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for week in calendar_weeks %}
+                        <tr>
+                            {% for day in week %}
+                            <td>
+                                {% if day != 0 and (client.active or day in days_with_session) %}
+                                <a href="{{ url_for('view_client', client_id=client.id, year=calendar_year, month=calendar_month, selectedDate=day_dates.get(day)) }}"
+                                   class="{{ day_classes.get(day) }}">{{ day }}</a>
+                                {% elif day != 0 %}
+                                <span class="calendar-day">{{ day }}</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="legend">
+                    <span class="legend-item"><span class="legend-swatch day-upcoming"></span>Предстоящий</span>
+                    <span class="legend-item"><span class="legend-swatch day-paid"></span>Прошёл, оплачен</span>
+                    <span class="legend-item"><span class="legend-swatch day-unpaid"></span>Прошёл, не оплачен</span>
+                </div>
+            </div>

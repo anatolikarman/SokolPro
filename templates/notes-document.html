@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SokolPro - Заметки — {{ client.name }}</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #fcfafc; --text: #222222; --muted: #777777; --border: #dddddd;
+            --card-bg: #f2f2f2; --card-bg-alt: #f8f8f8;
+        }
+        [data-theme="dark"] {
+            --bg: #030303; --text: #e6e6e6; --muted: #999999; --border: #444444;
+            --card-bg: #2a2a2a; --card-bg-alt: #262626;
+        }
+        body { font-family: Arial, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 24px;
+               line-height: 1.6; color: var(--text); background: var(--bg); }
+        .doc-title { font-size: 22px; margin-bottom: 4px; }
+        .doc-subtitle { color: var(--muted); margin-top: 0; margin-bottom: 32px; }
+        h1 { font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin: 40px 0 12px; }
+        h1:first-of-type { margin-top: 0; }
+        .session-notes { margin-bottom: 8px; }
+        .session-notes h1, .session-notes h2, .session-notes h3 { margin: 12px 0 6px; }
+        .empty { color: var(--muted); }
+
+        .theme-toggle { position: fixed; top: 16px; right: 16px; width: 36px; height: 36px;
+                         border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg);
+                         color: var(--text); cursor: pointer; font-size: 16px; }
+        .theme-toggle:hover { background: var(--card-bg-alt); }
+
+        .pdf-download-link, .docx-download-link { display: inline-block; margin-bottom: 16px; margin-right: 8px;
+                                                    padding: 8px 16px; background: #337ab7; color: #ffffff;
+                                                    text-decoration: none; border-radius: 4px; font-size: 14px; }
+        .pdf-download-link:hover, .docx-download-link:hover { background: #286090; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Переключить тему">&#127769;</button>
+
+    <p class="doc-title">Заметки клиента: {{ client.name }}</p>
+    <p class="doc-subtitle">Все сеансы с заметками, от старых к новым</p>
+
+    <a class="pdf-download-link" href="{{ url_for('notes_document_pdf', client_id=client.id) }}">Скачать PDF</a>
+    <a class="docx-download-link" href="{{ url_for('notes_document_docx', client_id=client.id) }}">Скачать Word</a>
+
+    {% if not client.backstory and not sessions %}
+    <p class="empty">Заметок нет</p>
+    {% endif %}
+
+    {% if client.backstory %}
+    <div>
+        <div class="session-notes">{{ client.backstory|safe }}</div>
+        <h1>Конец предыстории</h1>
+    </div>
+    {% endif %}
+
+    {% for s in sessions %}
+    <div>
+        <h1>{{ s.formatted_date }}</h1>
+        <div class="session-notes">{{ s.notes|safe if s.notes is not none else '' }}</div>
+    </div>
+    {% endfor %}
+
+    <script>
+        function updateThemeIcon() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('theme-toggle-btn').textContent = isDark ? '☀' : '\u{1F319}';
+        }
+        function toggleTheme() {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon();
+        }
+        updateThemeIcon();
+    </script>
+</body>
+</html>

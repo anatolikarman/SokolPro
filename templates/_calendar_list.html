@@ -1,0 +1,69 @@
+        <div class="right-column" id="calendar-container">
+            <div class="calendar-header">
+                <a class="calendar-nav" href="{{ url_for_clean('list_view', year=prev_year, month=prev_month) }}">&larr;</a>
+                <span class="calendar-title">{{ month_title }}</span>
+                <a class="calendar-nav" href="{{ url_for_clean('list_view', year=next_year, month=next_month) }}">&rarr;</a>
+            </div>
+            <table class="calendar-table">
+                <thead>
+                    <tr>
+                        <th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Вс</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in calendar_weeks %}
+                    <tr>
+                        {% for day in week %}
+                        <td>
+                            {% if day != 0 and day in days_with_session %}
+                            <a href="{{ url_for_clean('list_view', year=calendar_year, month=calendar_month, selectedDate=day_dates.get(day)) }}"
+                               class="{{ day_classes.get(day) }}">{{ day }}</a>
+                            {% elif day != 0 %}
+                            <span>{{ day }}</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if selected_date is not none %}
+            <div class="day-sessions">
+                <h3>Сеансы на {{ selected_date_formatted }}</h3>
+                {% if not selected_sessions %}
+                <p class="empty">Сеансов нет</p>
+                {% else %}
+                <ul class="day-sessions-list">
+                    {% for s in selected_sessions %}
+                    <li>
+                        <a href="{{ url_for('view_client', client_id=s.client.id) }}">{{ s.client.name }}</a>
+                        <span class="session-time">{{ s.formatted_time }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if inactive_clients %}
+            <details class="inactive-details">
+                <summary>Неактивные клиенты ({{ inactive_clients|length }})</summary>
+                <ul>
+                    {% for client in inactive_clients %}
+                    <li>
+                        <div class="client-info">
+                            <a class="client-name" href="{{ url_for('view_client', client_id=client.id) }}">{{ client.name }}</a>
+                            <span class="next-session">{{ next_session_text.get(client.id) }}</span>
+                        </div>
+                        <form class="remove-form" method="post"
+                              action="{{ url_for_clean('remove_client', client_id=client.id, year=calendar_year, month=calendar_month, selectedDate=selected_date) }}"
+                              onsubmit="return requestConfirm(this, 'Удалить клиента?');">
+                            <button type="submit" class="remove-btn">Удалить</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+        </div>

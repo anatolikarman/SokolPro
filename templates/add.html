@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SokolPro - Добавить клиента</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #fcfafc; --text: #222222; --muted: #555555;
+            --card-bg: #f2f2f2; --border: #cccccc; --input-bg: #ffffff;
+            --accent: #337ab7;
+        }
+        [data-theme="dark"] {
+            --bg: #030303; --text: #e6e6e6; --muted: #aaaaaa;
+            --card-bg: #2a2a2a; --border: #444444; --input-bg: #2a2a2a;
+            --accent: #5b9bd5;
+        }
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 16px;
+               background: var(--bg); color: var(--text); }
+        h1 { text-align: center; }
+        form { display: flex; flex-direction: column; gap: 12px; }
+        label { font-size: 14px; color: var(--muted); margin-bottom: -8px; }
+        input[type="text"], input[type="date"] { padding: 8px; font-size: 16px; border: 1px solid var(--border);
+                                                  border-radius: 4px; font-family: inherit;
+                                                  background: var(--input-bg); color: var(--text); }
+        button.save-btn { background: #5cb85c; color: #fff; border: none; border-radius: 4px;
+                           padding: 10px; font-size: 16px; cursor: pointer; }
+        button.save-btn:hover { background: #4cae4c; }
+        .back-link { display: inline-block; margin-top: 16px; color: var(--accent); text-decoration: none; }
+
+        .theme-toggle { position: fixed; top: 16px; right: 16px; width: 36px; height: 36px;
+                         border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg);
+                         color: var(--text); cursor: pointer; font-size: 16px; }
+        .theme-toggle:hover { filter: brightness(0.95); }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Переключить тему">&#127769;</button>
+
+    <h1>Добавить клиента</h1>
+    <form method="post" action="{{ url_for('add_client') }}">
+        <label for="name">Имя клиента</label>
+        <input type="text" id="name" name="name" placeholder="Введите имя клиента" required autofocus>
+
+        <label for="dateOfBirth">Дата рождения</label>
+        <input type="date" id="dateOfBirth" name="dateOfBirth">
+
+        <button type="submit" class="save-btn">Сохранить</button>
+    </form>
+    <a class="back-link" href="{{ url_for('list_view') }}">Назад к списку</a>
+
+    <script>
+        function updateThemeIcon() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('theme-toggle-btn').textContent = isDark ? '☀' : '\u{1F319}';
+        }
+        function toggleTheme() {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon();
+        }
+        updateThemeIcon();
+    </script>
+</body>
+</html>

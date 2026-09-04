@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SokolPro - Список клиентов</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #fcfafc; --text: #222222; --muted: #555555; --muted-2: #777777;
+            --card-bg: #f2f2f2; --card-bg-alt: #f8f8f8; --border: #cccccc;
+            --accent: #337ab7; --accent-hover: #286090; --accent-text: #ffffff;
+            --danger: #d9534f; --danger-hover: #c9302c;
+        }
+        [data-theme="dark"] {
+            --bg: #030303; --text: #e6e6e6; --muted: #aaaaaa; --muted-2: #888888;
+            --card-bg: #2a2a2a; --card-bg-alt: #262626; --border: #444444;
+            --accent: #5b9bd5; --accent-hover: #4a86c5; --accent-text: #ffffff;
+            --danger: #c9534f; --danger-hover: #b8443f;
+        }
+        body { font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px;
+               background: var(--bg); color: var(--text); }
+        h1 { text-align: left; margin-top: 0; }
+        .page { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+        .gif-column { flex: 0 0 auto; }
+        .gif-column img { width: 160px; height: 160px; border-radius: 8px; }
+        .gif-column .gif-dark { display: none; }
+        [data-theme="dark"] .gif-column .gif-light { display: none; }
+        [data-theme="dark"] .gif-column .gif-dark { display: block; }
+        .left-column { flex: 1 1 320px; }
+        .right-column { flex: 1 1 320px; }
+
+        .theme-toggle { position: fixed; top: 16px; right: 16px; width: 36px; height: 36px;
+                         border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg);
+                         color: var(--text); cursor: pointer; font-size: 16px; }
+        .theme-toggle:hover { background: var(--card-bg-alt); }
+
+        ul { list-style: none; padding: 0; }
+        li { display: flex; justify-content: space-between; align-items: center;
+             padding: 10px 14px; margin-bottom: 8px; background: var(--card-bg); border-radius: 6px; }
+        .client-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .client-name { display: block; color: var(--text); text-decoration: none; font-weight: bold; }
+        .client-name:hover { text-decoration: underline; }
+        .next-session { font-size: 12px; color: var(--muted-2); }
+        form.remove-form { margin: 0; }
+        button.remove-btn { background: var(--danger); color: #fff; border: none; border-radius: 4px;
+                             padding: 6px 12px; cursor: pointer; }
+        button.remove-btn:hover { background: var(--danger-hover); }
+        .add-link { display: inline-block; margin-bottom: 16px; padding: 8px 16px; background: var(--accent);
+                    color: var(--accent-text); text-decoration: none; border-radius: 4px; }
+        .add-link:hover { background: var(--accent-hover); }
+        .empty { color: var(--muted-2); }
+
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .calendar-nav { display: inline-flex; align-items: center; justify-content: center; width: 32px;
+                         height: 32px; border-radius: 50%; background: var(--card-bg); color: var(--text);
+                         text-decoration: none; font-size: 18px; }
+        .calendar-nav:hover { background: var(--card-bg-alt); }
+        .calendar-title { font-weight: bold; }
+        .calendar-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
+        .calendar-table th { padding: 6px 2px; font-size: 13px; color: var(--muted-2); font-weight: normal; }
+        .calendar-table td { padding: 2px; }
+        .calendar-day { display: block; padding: 8px 0; border-radius: 4px; text-decoration: none;
+                         color: var(--text); font-size: 14px; }
+        a.calendar-day:hover { outline: 1px solid var(--muted); }
+        .day-has-session { background: #cfe2ff; color: #1a1a1a; }
+        .day-selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+        .day-sessions { margin-top: 16px; padding: 16px; background: var(--card-bg-alt); border-radius: 6px; }
+        .day-sessions h3 { margin-top: 0; }
+        .day-sessions-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .day-sessions-list li { display: flex; justify-content: space-between; align-items: center;
+                                 background: var(--bg); padding: 8px 10px; border-radius: 4px; }
+        .day-sessions-list a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .day-sessions-list a:hover { text-decoration: underline; }
+        .day-sessions-list .session-time { color: var(--muted); font-size: 14px; }
+
+        .inactive-details { margin-top: 16px; }
+        .inactive-details summary { cursor: pointer; padding: 8px 12px; background: var(--card-bg);
+                                     border-radius: 6px; color: var(--muted); font-size: 14px; }
+        .inactive-details summary:hover { background: var(--card-bg-alt); }
+        .inactive-details ul { margin-top: 8px; }
+
+        .confirm-dialog { border: none; border-radius: 8px; padding: 20px; width: 90%; max-width: 320px;
+                           background: var(--bg); color: var(--text); }
+        .confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+        .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+        .confirm-cancel-btn { background: var(--card-bg); color: var(--text); border: none; border-radius: 4px;
+                               padding: 8px 14px; font-size: 14px; cursor: pointer; }
+        .confirm-cancel-btn:hover { background: var(--card-bg-alt); }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Переключить тему">&#127769;</button>
+
+    <h1>Список клиентов</h1>
+
+    <div class="page">
+        <div class="gif-column">
+            <img class="gif-light" src="{{ url_for('static', filename='images/telepurte-animation-light.gif') }}" alt="Telepurte animation">
+            <img class="gif-dark" src="{{ url_for('static', filename='images/telepurte-animation-dark.gif') }}" alt="Telepurte animation">
+        </div>
+
+        <div class="left-column">
+            <a class="add-link" href="{{ url_for('add_form') }}">Добавить клиента</a>
+
+            <ul>
+                {% for client in clients %}
+                <li>
+                    <div class="client-info">
+                        <a class="client-name" href="{{ url_for('view_client', client_id=client.id) }}">{{ client.name }}</a>
+                        <span class="next-session">{{ next_session_text.get(client.id) }}</span>
+                    </div>
+                    <form class="remove-form" method="post"
+                          action="{{ url_for_clean('remove_client', client_id=client.id, year=calendar_year, month=calendar_month, selectedDate=selected_date) }}"
+                          onsubmit="return requestConfirm(this, 'Удалить клиента?');">
+                        <button type="submit" class="remove-btn">Удалить</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+
+            {% if not clients %}
+            <p class="empty">Список пуст</p>
+            {% endif %}
+        </div>
+
+{% include "_calendar_list.html" %}
+    </div>
+
+    <dialog id="confirm-dialog" class="confirm-dialog">
+        <p id="confirm-message">Вы уверены?</p>
+        <div class="confirm-actions">
+            <button type="button" class="confirm-cancel-btn" onclick="cancelConfirm()">Отмена</button>
+            <button type="button" class="remove-btn" onclick="confirmPendingAction()">Удалить</button>
+        </div>
+    </dialog>
+
+    <script>
+        var pendingForm = null;
+        function requestConfirm(form, message) {
+            pendingForm = form;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-dialog').showModal();
+            return false;
+        }
+        function confirmPendingAction() {
+            document.getElementById('confirm-dialog').close();
+            if (pendingForm) {
+                syncRemoveFormCalendarParams(pendingForm);
+                pendingForm.submit();
+                pendingForm = null;
+            }
+        }
+        function syncRemoveFormCalendarParams(form) {
+            // Month/day navigation happens in-place via AJAX (see below), so the form's
+            // year/month/selectedDate baked in at page load can be stale by the time the
+            // user deletes a client. Re-sync from the address bar, which the AJAX
+            // navigation keeps up to date via history.pushState, so the list page lands
+            // back on whatever month/day was actually being viewed.
+            if (!form.classList.contains('remove-form')) return;
+            var current = new URLSearchParams(window.location.search);
+            var url = new URL(form.action, window.location.origin);
+            ['year', 'month', 'selectedDate'].forEach(function (key) {
+                var value = current.get(key);
+                if (value) {
+                    url.searchParams.set(key, value);
+                } else {
+                    url.searchParams.delete(key);
+                }
+            });
+            form.action = url.pathname + url.search;
+        }
+        function cancelConfirm() {
+            document.getElementById('confirm-dialog').close();
+            pendingForm = null;
+        }
+    </script>
+
+    <script>
+        function updateThemeIcon() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('theme-toggle-btn').textContent = isDark ? '☀' : '\u{1F319}';
+        }
+        function toggleTheme() {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon();
+        }
+        updateThemeIcon();
+    </script>
+
+    <script src="{{ url_for('static', filename='js/calendar-nav.js') }}"></script>
+    <script>
+        initCalendarNav({ linkSelector: 'a.calendar-nav, a.calendar-day' });
+    </script>
+</body>
+</html>
