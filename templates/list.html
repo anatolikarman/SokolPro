@@ -49,6 +49,8 @@
         .gif-wrap.mascot-nub .mascot-nub.gif-light { display: block; }
         [data-theme="dark"] .gif-wrap.mascot-nub .mascot-nub.gif-light { display: none; }
         [data-theme="dark"] .gif-wrap.mascot-nub .mascot-nub.gif-dark { display: block; }
+        .gif-wrap.mascot-shake .mascot-shake { display: block; }
+        .gif-wrap.mascot-bored .mascot-bored { display: block; }
         .speech-bubble { position: absolute; top: 0; left: 50%; transform: translate(-50%, -60%) scale(0.85);
                           background: var(--bubble-bg); color: #ffffff; border-radius: 18px;
                           padding: 10px 18px; font-size: 16px; font-weight: bold; white-space: nowrap;
@@ -146,6 +148,8 @@
                 <img class="mascot-telepurte gif-dark" src="{{ url_for('static', filename='images/telepurte-animation-dark.gif') }}" alt="Telepurte animation">
                 <img class="mascot-nub gif-light" src="{{ url_for('static', filename='images/nub-light.gif') }}" alt="Nub animation">
                 <img class="mascot-nub gif-dark" src="{{ url_for('static', filename='images/nub-dark.gif') }}" alt="Nub animation">
+                <img class="mascot-shake" src="{{ url_for('static', filename='images/shake_it.gif') }}" alt="Shake it animation">
+                <img class="mascot-bored" src="{{ url_for('static', filename='images/bored.gif') }}" alt="Bored animation">
                 <div class="speech-bubble" id="mascot-bubble">Hello!</div>
             </div>
         </div>
@@ -251,7 +255,7 @@
             var bubble = document.getElementById('mascot-bubble');
             if (!wrap || !bubble) return;
 
-            var mascots = ['telepurte', 'nub'];
+            var mascots = ['telepurte', 'nub', 'shake', 'bored'];
             var mascot = null;
             try { mascot = sessionStorage.getItem('sokolpro:mascot'); } catch (e) {}
             if (mascots.indexOf(mascot) === -1) {
