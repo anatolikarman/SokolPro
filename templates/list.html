@@ -298,6 +298,7 @@
                 ];
                 var soundUrl = sounds[Math.floor(Math.random() * sounds.length)];
                 var sound = new Audio(soundUrl);
+                sound.volume = 0.8;
                 var fallbackDuration = 10.8;
                 var started = false;
                 function startFadeIn() {
