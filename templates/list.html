@@ -292,14 +292,15 @@
                 wrap.classList.add('mascot-visible');
             } else {
                 var sounds = [
-                    "{{ url_for('static', filename='sounds/magic-mirror.mp3') }}",
-                    "{{ url_for('static', filename='sounds/shinese-gong.mp3') }}",
-                    "{{ url_for('static', filename='sounds/wow_2.mp3') }}"
+                    { url: "{{ url_for('static', filename='sounds/magic-mirror.mp3') }}", duration: 10.79 },
+                    { url: "{{ url_for('static', filename='sounds/shinese-gong.mp3') }}", duration: 6.46 },
+                    { url: "{{ url_for('static', filename='sounds/wow_2.mp3') }}", duration: 3.42 },
+                    { url: "{{ url_for('static', filename='sounds/windows-xp-startup.mp3') }}", duration: 4.94 }
                 ];
-                var soundUrl = sounds[Math.floor(Math.random() * sounds.length)];
-                var sound = new Audio(soundUrl);
+                var chosenSound = sounds[Math.floor(Math.random() * sounds.length)];
+                var sound = new Audio(chosenSound.url);
                 sound.volume = 0.8;
-                var fallbackDuration = 10.8;
+                var fallbackDuration = chosenSound.duration;
                 var started = false;
                 function startFadeIn() {
                     if (started) return;
