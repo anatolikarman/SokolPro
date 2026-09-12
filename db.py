@@ -1,8 +1,17 @@
 """SQLite data access layer mirroring the original Client/Session JPA entities."""
 import sqlite3
+import sys
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent / "data" / "clients.db"
+if getattr(sys, "frozen", False):
+    # Running as a PyInstaller executable: __file__ resolves inside the
+    # temporary bundle extraction dir, which doesn't persist between runs.
+    # Store the database next to the .exe instead.
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
+DB_PATH = BASE_DIR / "data" / "clients.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS client (

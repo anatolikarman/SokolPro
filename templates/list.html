@@ -306,7 +306,9 @@
                     { url: "{{ url_for('static', filename='sounds/magic-mirror.mp3') }}", duration: 10.79 },
                     { url: "{{ url_for('static', filename='sounds/shinese-gong.mp3') }}", duration: 6.46 },
                     { url: "{{ url_for('static', filename='sounds/wow_2.mp3') }}", duration: 3.42 },
-                    { url: "{{ url_for('static', filename='sounds/windows-xp-startup.mp3') }}", duration: 4.94 }
+                    { url: "{{ url_for('static', filename='sounds/windows-xp-startup.mp3') }}", duration: 4.94 },
+                    { url: "{{ url_for('static', filename='sounds/shell-mnemonic-version-1-celli.mp3') }}", duration: 5.23 },
+                    { url: "{{ url_for('static', filename='sounds/undertakers-bell_2UwFCIe.mp3') }}", duration: 4.23 }
                 ];
                 var chosenSound = sounds[Math.floor(Math.random() * sounds.length)];
                 var sound = new Audio(chosenSound.url);
