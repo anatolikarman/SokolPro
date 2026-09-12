@@ -145,6 +145,7 @@ def add_client():
     if name and name.strip():
         dob = date.fromisoformat(dob_str) if dob_str else None
         repo.save_client(models.Client(id=None, name=name.strip(), date_of_birth=dob, active=True, backstory=None))
+        return redirect(url_for("list_view", created=1))
     return redirect(url_for("list_view"))
 
 

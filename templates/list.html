@@ -287,7 +287,13 @@
                 return false;
             }
 
-            var cameFromClientPage = document.referrer.indexOf('/clients/') !== -1 || isBackForwardNavigation();
+            var cameFromClientCreation = /[?&]created=1(&|$)/.test(window.location.search);
+            if (cameFromClientCreation) {
+                var cleanUrl = window.location.pathname + window.location.search
+                    .replace(/([?&])created=1&?/, '$1').replace(/[?&]$/, '');
+                window.history.replaceState(null, '', cleanUrl || window.location.pathname);
+            }
+            var cameFromClientPage = document.referrer.indexOf('/clients/') !== -1 || isBackForwardNavigation() || cameFromClientCreation;
             if (cameFromClientPage) {
                 wrap.classList.add('mascot-visible');
             } else {
