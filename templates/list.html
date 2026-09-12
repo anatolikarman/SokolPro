@@ -60,6 +60,16 @@
         .gif-wrap.mascot-nub3 .mascot-nub3.gif-light { display: block; }
         [data-theme="dark"] .gif-wrap.mascot-nub3 .mascot-nub3.gif-light { display: none; }
         [data-theme="dark"] .gif-wrap.mascot-nub3 .mascot-nub3.gif-dark { display: block; }
+        .gif-wrap.mascot-dance_love .mascot-dance_love { display: block; }
+        .gif-wrap.mascot-happy_dance .mascot-happy_dance { display: block; }
+        .gif-wrap.mascot-walking_tall .mascot-walking_tall { display: block; }
+        .gif-wrap.mascot-valentine .mascot-valentine { display: block; }
+        .gif-wrap.mascot-nom_nom .mascot-nom_nom { display: block; }
+        .gif-wrap.mascot-shake_dance .mascot-shake_dance { display: block; }
+        .gif-wrap.mascot-very_happy .mascot-very_happy { display: block; }
+        .gif-wrap.mascot-working_out .mascot-working_out { display: block; }
+        .gif-wrap.mascot-loaf_scrubs .mascot-loaf_scrubs { display: block; }
+        .gif-wrap.mascot-massage .mascot-massage { display: block; }
         .speech-bubble { position: absolute; top: 0; left: 50%; transform: translate(-50%, -60%) scale(0.85);
                           background: var(--bubble-bg); color: #ffffff; border-radius: 18px;
                           padding: 10px 18px; font-size: 16px; font-weight: bold; white-space: nowrap;
@@ -165,6 +175,16 @@
                 <img class="mascot-around gif-dark" src="{{ url_for('static', filename='images/nub/nub-around-dark.gif') }}" alt="Nub animation">
                 <img class="mascot-nub3 gif-light" src="{{ url_for('static', filename='images/nub/nub-3-light.gif') }}" alt="Nub animation">
                 <img class="mascot-nub3 gif-dark" src="{{ url_for('static', filename='images/nub/nub-3-dark.gif') }}" alt="Nub animation">
+                <img class="mascot-dance_love" src="{{ url_for('static', filename='images/kenny/dance_love.gif') }}" alt="Dance love animation">
+                <img class="mascot-happy_dance" src="{{ url_for('static', filename='images/kenny/happy_dance.gif') }}" alt="Happy dance animation">
+                <img class="mascot-walking_tall" src="{{ url_for('static', filename='images/kenny/walking_tall.gif') }}" alt="Walking tall animation">
+                <img class="mascot-valentine" src="{{ url_for('static', filename='images/kenny/valentine.gif') }}" alt="Valentine animation">
+                <img class="mascot-nom_nom" src="{{ url_for('static', filename='images/kenny/nom_nom.gif') }}" alt="Nom nom animation">
+                <img class="mascot-shake_dance" src="{{ url_for('static', filename='images/kenny/shake_dance.gif') }}" alt="Shake dance animation">
+                <img class="mascot-very_happy" src="{{ url_for('static', filename='images/kenny/very_happy.gif') }}" alt="Very happy animation">
+                <img class="mascot-working_out" src="{{ url_for('static', filename='images/kenny/working_out.gif') }}" alt="Working out animation">
+                <img class="mascot-loaf_scrubs" src="{{ url_for('static', filename='images/kenny/loaf_scrubs.gif') }}" alt="Loaf scrubs animation">
+                <img class="mascot-massage" src="{{ url_for('static', filename='images/kenny/massage.gif') }}" alt="Massage animation">
                 <div class="speech-bubble" id="mascot-bubble">Hello!</div>
             </div>
         </div>
@@ -270,7 +290,9 @@
             var bubble = document.getElementById('mascot-bubble');
             if (!wrap || !bubble) return;
 
-            var mascots = ['telepurte', 'nub', 'shake', 'bored', 'nub2', 'around', 'nub3'];
+            var mascots = ['telepurte', 'nub', 'shake', 'bored', 'nub2', 'around', 'nub3',
+                'dance_love', 'happy_dance', 'walking_tall', 'valentine', 'nom_nom',
+                'shake_dance', 'very_happy', 'working_out', 'loaf_scrubs', 'massage'];
             var mascot = null;
             try { mascot = sessionStorage.getItem('sokolpro:mascot'); } catch (e) {}
             if (mascots.indexOf(mascot) === -1) {
