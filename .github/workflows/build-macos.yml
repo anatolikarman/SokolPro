@@ -1,0 +1,47 @@
+name: Build macOS executable
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-13   # Intel (x86_64)
+            arch: x86_64
+          - runner: macos-14   # Apple Silicon (arm64)
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile --name SokolPro \
+            --add-data "templates:templates" \
+            --add-data "static:static" \
+            app.py
+
+      - name: Package (preserve executable bit)
+        run: |
+          chmod +x dist/SokolPro
+          tar -czf SokolPro-macos-${{ matrix.arch }}.tar.gz -C dist SokolPro
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SokolPro-macos-${{ matrix.arch }}
+          path: SokolPro-macos-${{ matrix.arch }}.tar.gz
