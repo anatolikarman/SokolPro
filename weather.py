@@ -8,11 +8,14 @@ and also lets a failed/offline fetch simply omit the widget instead of
 showing a broken-image icon.
 """
 import json
+import ssl
 import time
 import urllib.error
 import urllib.request
 from threading import Lock
 from typing import Optional
+
+import certifi
 
 LOCATION = "Tbilisi"
 WTTR_URL = f"https://wttr.in/{LOCATION}?format=j1&lang=ru"
@@ -37,6 +40,12 @@ _DEFAULT_ICON = "🌡️"
 
 _lock = Lock()
 _cache = {"data": None, "fetched_at": 0.0}
+
+# macOS's python.org-style builds (including the one used to build the frozen
+# executable) don't reliably wire urllib into the system CA trust store, which
+# makes every HTTPS request fail with CERTIFICATE_VERIFY_FAILED. Pinning the
+# context to certifi's bundled CA file sidesteps the OS trust store entirely.
+_SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 def _icon_for_code(code: Optional[str]) -> str:
@@ -63,7 +72,7 @@ def _parse(payload: dict) -> dict:
 def _fetch_fresh() -> Optional[dict]:
     try:
         req = urllib.request.Request(WTTR_URL, headers={"User-Agent": "curl/8.0"})
-        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as resp:
+        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS, context=_SSL_CONTEXT) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
         return _parse(payload)
     except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError, IndexError):
